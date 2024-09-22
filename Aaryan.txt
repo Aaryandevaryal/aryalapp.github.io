@@ -1,0 +1,217 @@
+HTML (index.html)
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles.css">
+    <title>Aryal - One-to-Many Video Chat</title>
+</head>
+<body>
+    <header>
+        <div class="app-logo">
+            <div class="logo-square">Aryal</div>
+        </div>
+        <h1>Welcome to - Aryal</h1>
+        <h2 class="developer">Developed by - Aaryan Dev Aryal</h2>
+    </header>
+
+    <div id="friendSection">
+        <button id="friendIcon">👥 Friends</button>
+        <div id="friendListContainer" style="display: none;">
+            <input type="text" id="friendSearch" placeholder="Search for friends">
+            <div id="friendList"></div>
+        </div>
+    </div>
+
+    <div class="video-container" id="videoContainer">
+        <video id="localVideo" autoplay muted></video>
+        <div id="remoteVideos"></div>
+    </div>
+
+    <input type="text" id="username" placeholder="Enter your name">
+    <button id="joinButton">Join</button>
+    <button id="toggleVideoButton" onclick="toggleVideo()">Toggle Video</button>
+    <button id="toggleAudioButton" onclick="toggleAudio()">Toggle Audio</button>
+    
+    <div class="chat-container">
+        <div id="messages"></div>
+        <input type="text" id="chatInput" placeholder="Type a message...">
+        <button id="sendButton">Send</button>
+    </div>
+
+    <div id="meetingLinkContainer" style="display: none;">
+        <button id="generateLinkButton">Generate Meeting Link</button>
+        <input type="text" id="meetingLink" readonly>
+        <button id="copyLinkButton">Copy Link</button>
+        <button id="sendLinkToFriendsButton">Send Link to Friends</button>
+    </div>
+    
+    <button id="startVideoButton">Start Video Meeting</button>
+    
+    <div id="hostControls" style="display: none;">
+        <h3>Host Controls</h3>
+        <div id="participantsList"></div>
+        <input type="text" id="changeNameInput" placeholder="Change Name">
+        <button id="changeNameButton">Change Name</button>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
+CSS (styles.css)
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background: linear-gradient(135deg, #4c1f1f, #1e0c0c);
+    color: #fff;
+}
+
+header {
+    text-align: center;
+    padding: 20px;
+}
+
+.app-logo {
+    display: inline-block;
+    margin-bottom: 10px;
+}
+
+.logo-square {
+    background: #c22;
+    color: #000;
+    padding: 20px;
+    border-radius: 5px;
+    display: inline-block;
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.video-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 20px 0;
+}
+
+video {
+    width: 100%;
+    max-width: 600px;
+    border: 2px solid #fff;
+}
+
+.chat-container {
+    margin: 20px;
+}
+
+input[type="text"] {
+    width: 70%;
+    padding: 10px;
+    margin: 10px 0;
+}
+
+button {
+    padding: 10px;
+    margin: 5px;
+    background: #c22;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #a11;
+}
+
+@media (max-width: 768px) {
+    header {
+        padding: 10px;
+    }
+
+    .logo-square {
+        padding: 10px;
+        font-size: 20px;
+    }
+
+    video {
+        width: 100%;
+    }
+
+    input[type="text"], button {
+        width: 90%;
+    }
+}
+JavaScript (script.js)
+let isHost = false;
+let currentParticipants = [];
+let localStream;
+let remoteStreams = {};
+
+const constraints = {
+    video: true,
+    audio: true
+};
+
+document.getElementById('startVideoButton').onclick = async function() {
+    try {
+        localStream = await navigator.mediaDevices.getUserMedia(constraints);
+        document.getElementById('localVideo').srcObject = localStream;
+        
+        currentParticipants = JSON.parse(localStorage.getItem('friends')) || [];
+        alert("Video meeting has started!");
+        isHost = true;
+        displayParticipants();
+    } catch (error) {
+        console.error('Error accessing media devices.', error);
+    }
+};
+
+function toggleVideo() {
+    const videoTrack = localStream.getVideoTracks()[0];
+    videoTrack.enabled = !videoTrack.enabled;
+}
+
+function toggleAudio() {
+    const audioTrack = localStream.getAudioTracks()[0];
+    audioTrack.enabled = !audioTrack.enabled;
+}
+
+function displayParticipants() {
+    const participantsList = document.getElementById('participantsList');
+    participantsList.innerHTML = '';
+    
+    currentParticipants.forEach(participant => {
+        const participantItem = document.createElement('div');
+        participantItem.textContent = participant;
+        
+        const muteButton = document.createElement('button');
+        muteButton.textContent = "Mute";
+        muteButton.onclick = () => toggleMute(participant);
+        
+        const kickButton = document.createElement('button');
+        kickButton.textContent = "Kick";
+        kickButton.onclick = () => kickParticipant(participant);
+        
+        participantItem.appendChild(muteButton);
+        participantItem.appendChild(kickButton);
+        participantsList.appendChild(participantItem);
+    });
+    
+    document.getElementById('hostControls').style.display = 'block';
+}
+
+function toggleMute(participant) {
+    alert(`${participant} has been muted!`);
+}
+
+function kickParticipant(participant) {
+    currentParticipants = currentParticipants.filter(p => p !== participant);
+    alert(`${participant} has been kicked from the meeting!`);
+    displayParticipants();
+}
+
+window.onload = function() {
+    // Placeholder for additional functions
+    // You may want to load friends or any other data here
+};
